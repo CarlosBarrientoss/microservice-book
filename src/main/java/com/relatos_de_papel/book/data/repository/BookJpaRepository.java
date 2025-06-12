@@ -47,4 +47,6 @@ public interface BookJpaRepository
 
     /** Ejemplo combinado: buscar por autor e idioma */
     List<Book> findByAuthorIdAndLanguage(Long authorId, String language);
+
+    List<Book> findByStockGreaterThan(int stock);
 }

@@ -48,38 +48,38 @@ public class BookRepository {
 
     /**
      * Búsqueda dinámica sobre los campos:
-     *   - title  (contiene, MATCH)
+     *   - title (contiene, MATCH)
      *   - language (igual, EQUAL)
      *   - categoryId (igual, EQUAL)
      *   - status (igual, EQUAL)
+     *   - stockMin (mayor que, GREATER_THAN)
      *
      * Si alguno de los parámetros es null/ vacío, se omite en la consulta.
      */
     public List<Book> search(String title,
                              String language,
                              Long categoryId,
-                             Boolean status) {
+                             Boolean status,
+                             Integer stockMin) {
 
         SearchCriteria<Book> spec = new SearchCriteria<>();
 
         if (StringUtils.hasLength(title)) {
-            // MATCH en campo “title”
             spec.add(new SearchStatement(Consts.TITLE, title, SearchOperation.MATCH));
         }
         if (StringUtils.hasLength(language)) {
-            // EQUAL en campo “language”
             spec.add(new SearchStatement(Consts.LANGUAGE, language, SearchOperation.EQUAL));
         }
         if (categoryId != null) {
-            // EQUAL en campo “fk_id_category”
             spec.add(new SearchStatement(Consts.FK_ID_CATEGORY, categoryId, SearchOperation.EQUAL));
         }
         if (status != null) {
-            // EQUAL en campo “status”
             spec.add(new SearchStatement(Consts.STATUS, status, SearchOperation.EQUAL));
         }
+        if (stockMin != null) {
+            spec.add(new SearchStatement("stock", stockMin, SearchOperation.GREATER_THAN));
+        }
 
-        // El método findAll(spec) viene de JpaSpecificationExecutor<Book>
         return repository.findAll(spec);
     }
 }

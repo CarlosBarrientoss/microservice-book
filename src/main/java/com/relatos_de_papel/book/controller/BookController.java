@@ -13,9 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * REST Controller para exponer operaciones CRUD de Book.
- */
 @RestController
 @RequestMapping("/books")
 @RequiredArgsConstructor
@@ -29,17 +26,14 @@ public class BookController {
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String language,
             @RequestParam(required = false) Long categoryId,
-            @RequestParam(required = false) Boolean status) {
+            @RequestParam(required = false) Boolean status,
+            @RequestParam(required = false) Integer stockMin // ✅ NUEVO PARÁMETRO
+    ) {
+        log.info("Buscando libros con filtros: title={}, language={}, categoryId={}, status={}, stockMin={}",
+                title, language, categoryId, status, stockMin);
 
-        log.info("Buscando libros con filtros: title={}, language={}, categoryId={}, status={}",
-                title, language, categoryId, status);
-
-        List<Book> result = bookService.getBooks(title, language, categoryId, status);
-        if (result != null) {
-            return ResponseEntity.ok(result);
-        } else {
-            return ResponseEntity.ok(Collections.emptyList());
-        }
+        List<Book> result = bookService.getBooks(title, language, categoryId, status, stockMin);
+        return (result != null) ? ResponseEntity.ok(result) : ResponseEntity.ok(Collections.emptyList());
     }
 
     @GetMapping("/{id}")

@@ -16,9 +16,6 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 
-/**
- * Implementación del servicio de negocio para Book.
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -28,17 +25,15 @@ public class BookServiceImpl implements BookService {
     private final ObjectMapper objectMapper;
 
     @Override
-    public List<Book> getBooks(String title, String language, Long categoryId, Boolean status) {
-        // Si se proporcionan criterios de búsqueda, delegamos a search(...)
+    public List<Book> getBooks(String title, String language, Long categoryId, Boolean status, Integer stockMin) {
         if (StringUtils.hasLength(title) ||
                 StringUtils.hasLength(language) ||
                 categoryId != null ||
-                status != null) {
-
-            return repository.search(title, language, categoryId, status);
+                status != null ||
+                stockMin != null) {
+            return repository.search(title, language, categoryId, status, stockMin);
         }
 
-        // Si no hay filtros, devolvemos todos los libros
         List<Book> all = repository.getBooks();
         return all.isEmpty() ? null : all;
     }
@@ -70,7 +65,6 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book createBook(CreateBookRequest request) {
-        // Validación mínima (puede ampliarse con @Valid en el controlador)
         if (request == null ||
                 !StringUtils.hasLength(request.getTitle()) ||
                 !StringUtils.hasLength(request.getLanguage()) ||
@@ -81,7 +75,6 @@ public class BookServiceImpl implements BookService {
             return null;
         }
 
-        // Construcción del nuevo Book
         Book book = Book.builder()
                 .title(request.getTitle().trim())
                 .description(request.getDescription() == null ? null : request.getDescription().trim())
@@ -94,7 +87,8 @@ public class BookServiceImpl implements BookService {
                 .authorId(request.getAuthorId())
                 .image(request.getImage().trim())
                 .reviewScore(request.getReviewScore())
-                .status(request.getStatus())       // ← Usamos getStatus() en lugar de isStatus()
+                .status(request.getStatus())
+                .stock(request.getStock()) // ✅ Campo stock incluido
                 .build();
 
         return repository.save(book);
@@ -102,28 +96,17 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book updateBook(String bookId, String patchRequest) {
-        // PATCH usando JsonMergePatch (RFC 7386)
         Book existing = getBook(bookId);
         if (existing == null) {
             return null;
         }
 
         try {
-            // 1) Convertir el JSON (String) en JsonMergePatch
             JsonMergePatch mergePatch = JsonMergePatch.fromJson(objectMapper.readTree(patchRequest));
-
-            // 2) Convertir el objeto Java “existing” a JsonNode
             JsonNode existingNode = objectMapper.valueToTree(existing);
-
-            // 3) Aplicar el patch (merge) sobre el JsonNode existente
             JsonNode patchedNode = mergePatch.apply(existingNode);
-
-            // 4) Convertir el nodo parchado de vuelta a Book
             Book patchedBook = objectMapper.treeToValue(patchedNode, Book.class);
-
-            // 5) Guardar y retornar
             return repository.save(patchedBook);
-
         } catch (JsonProcessingException | JsonPatchException e) {
             log.error("Error parchando el libro con ID {}: {}", bookId, e.getMessage());
             return null;
@@ -137,7 +120,6 @@ public class BookServiceImpl implements BookService {
             return null;
         }
 
-        // Copiar cada campo no nulo desde el DTO al objeto existente
         if (StringUtils.hasLength(updateRequest.getTitle())) {
             existing.setTitle(updateRequest.getTitle().trim());
         }
@@ -173,6 +155,9 @@ public class BookServiceImpl implements BookService {
         }
         if (updateRequest.getStatus() != null) {
             existing.setStatus(updateRequest.getStatus());
+        }
+        if (updateRequest.getStock() != null) {
+            existing.setStock(updateRequest.getStock()); // ✅ Campo stock incluido
         }
 
         return repository.save(existing);

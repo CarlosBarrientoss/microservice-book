@@ -20,6 +20,7 @@ public class Book {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "pk_id_book")
     private Long id;
 
     // --- Título obligatorio, max 150 caracteres ---
@@ -86,6 +87,11 @@ public class Book {
     @Column(name = "status", nullable = false)
     private boolean status;
 
+    // --- Cantidad en stock, mínimo 0 ---
+    @Min(0)
+    @Column(name = "stock", nullable = false)
+    private int stock;
+
     /**
      * Actualiza todos los campos de este Book a partir de un DTO.
     */
@@ -101,6 +107,7 @@ public class Book {
         this.authorId        = bookDto.getAuthorId();
         this.image           = bookDto.getImage();
         this.reviewScore     = bookDto.getReviewScore();
+        this.stock           = bookDto.getStock();
         this.status          = bookDto.getStatus();
     }
 

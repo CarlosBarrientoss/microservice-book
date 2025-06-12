@@ -28,4 +28,5 @@ public class BookDto {
     private String image;
     private Integer reviewScore;
     private Boolean status;
+    private Integer stock;
 }

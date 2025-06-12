@@ -9,7 +9,6 @@ import java.util.List;
 /**
  * Define las operaciones de negocio para la entidad Book.
  */
-
 public interface BookService {
 
     /**
@@ -18,9 +17,10 @@ public interface BookService {
      * @param language    Filtrar por idioma (igual).
      * @param categoryId  Filtrar por ID de categoría.
      * @param status      Filtrar por estado (activo/inactivo).
+     * @param stockMin    Filtrar por stock mayor que este valor.
      * @return Lista de libros que cumplen los filtros (o todos si no hay filtros).
      */
-    List<Book> getBooks(String title, String language, Long categoryId, Boolean status);
+    List<Book> getBooks(String title, String language, Long categoryId, Boolean status, Integer stockMin); // ✅ Corregido
 
     /**
      * Busca un libro por su ID (en formato String). Retorna null si no existe o el ID es inválido.
